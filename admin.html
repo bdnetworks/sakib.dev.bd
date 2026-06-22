@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔒 সুরক্ষিত লাইভ ডাটাবেজ</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #f0f2f5; }
+        
+        /* --- লগইন স্ক্রিন স্টাইল --- */
+        .login-overlay { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #eef2f3; z-index: 9999; justify-content: center; align-items: center; }
+        .login-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); width: 100%; max-width: 400px; text-align: center; }
+        .login-box h2 { color: #1a73e8; margin-bottom: 25px; font-size: 22px; }
+        .input-group { margin-bottom: 18px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #4a5568; }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 15px; }
+        .input-group input:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px rgba(26,115,232,0.2); }
+        .btn-login { width: 100%; background: #1a73e8; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; transition: background 0.2s; }
+        .btn-login:hover { background: #1557b0; }
+        .error-msg { color: #d93025; font-size: 14px; margin-top: 12px; display: none; font-weight: 500; }
+
+        /* --- মেইন ড্যাশবোর্ড (শীট কন্টেইনার) --- */
+        .dashboard-container { display: none; width: 100%; height: 100%; flex-direction: column; }
+        .top-bar { background: #1a73e8; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .top-bar h3 { margin: 0; font-size: 16px; font-weight: 500; }
+        .btn-logout { background: #d93025; color: white; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .btn-logout:hover { background: #b31412; }
+        
+        /* ফুল স্ক্রিন আইফ্রেম */
+        .sheet-frame { flex-grow: 1; width: 100%; height: 100%; border: none; background: #fff; }
+    </style>
+</head>
+<body>
+
+<div class="login-overlay" id="loginOverlay">
+    <div class="login-box">
+        <h2>🔒 অ্যাডমিন লগইন</h2>
+        <form onsubmit="checkLogin(event)">
+            <div class="input-group">
+                <label for="username">ইউজার আইডি (User ID)</label>
+                <input type="text" id="username" required autocomplete="off" placeholder="ইউজার আইডি লিখুন">
+            </div>
+            <div class="input-group">
+                <label for="password">পাসওয়ার্ড (Password)</label>
+                <input type="password" id="password" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn-login">লগইন করুন</button>
+            <div class="error-msg" id="errorMsg">❌ ভুল ইউজার আইডি বা পাসওয়ার্ড! আবার চেষ্টা করুন।</div>
+        </form>
+    </div>
+</div>
+
+<div class="dashboard-container" id="dashboardContainer">
+    <div class="top-bar">
+        <h3>📊 লাইভ গুগল স্প্রেডশীট ড্যাশবোর্ড (সরাসরি ভিউ ও এডিট)</h3>
+        <button class="btn-logout" onclick="logout()">🔓 লগআউট</button>
+    </div>
+    <iframe class="sheet-frame" src="https://docs.google.com/spreadsheets/d/1z9G-oqB3rxger8N0eLCbrjD4Or4Xdh4xYDBk5EcmuC4/edit?rm=minimal#gid=1249971504" allowfullscreen></iframe>
+</div>
+
+<script>
+    // লগইন ভ্যালিডেশন ফাংশন
+    function checkLogin(e) {
+        e.preventDefault();
+        
+        const userInp = document.getElementById('username').value.trim();
+        const passInp = document.getElementById('password').value;
+        const errorMsg = document.getElementById('errorMsg');
+
+        // ইউজার আইডি এবং পাসওয়ার্ড যাচাই
+        if (userInp === 'admin' && passInp === 'admin123') {
+
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('dashboardContainer').style.display = 'flex';
+            errorMsg.style.display = 'none';
+            
+            // সেশন ট্র্যাকিং (যাতে পেজ রিফ্রেশ করলেও বারবার লগইন করতে না হয়)
+            localStorage.setItem('admin_is_logged_in', 'true');
+        } else {
+            // ভুল হলে এরর মেসেজ দেখাবে
+            errorMsg.style.display = 'block';
+            document.getElementById('password').value = ''; // পাসওয়ার্ড ফিল্ড ক্লিয়ার করবে
+        }
+    }
+
+    // লগআউট ফাংশন
+    function logout() {
+        localStorage.removeItem('admin_is_logged_in');
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+        document.getElementById('dashboardContainer').style.display = 'none';
+        document.getElementById('loginOverlay').style.display = 'flex';
+    }
+
+    // পেজ লোড হওয়ার সময় আগের সেশন চেক করা
+    window.addEventListener('DOMContentLoaded', () => {
+        if (localStorage.getItem('admin_is_logged_in') === 'true') {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('dashboardContainer').style.display = 'flex';
+        }
+    });
+</script>
+
+</body>
+</html>
